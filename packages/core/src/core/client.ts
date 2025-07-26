@@ -104,7 +104,7 @@ export class GeminiClient {
   private readonly COMPRESSION_PRESERVE_THRESHOLD = 0.3;
 
   private readonly loopDetector: LoopDetectionService;
-  private lastPromptId?: string;
+  private lastPromptId: string;
 
   constructor(private config: Config) {
     if (config.getProxy()) {
@@ -113,6 +113,7 @@ export class GeminiClient {
 
     this.embeddingModel = config.getEmbeddingModel();
     this.loopDetector = new LoopDetectionService(config);
+    this.lastPromptId = this.config.getSessionId();
   }
 
   async initialize(contentGeneratorConfig: ContentGeneratorConfig) {
@@ -122,7 +123,6 @@ export class GeminiClient {
       this.config.getSessionId(),
     );
     this.chat = await this.startChat();
-    this.lastPromptId = this.config.getSessionId();
   }
 
   getContentGenerator(): ContentGenerator {

@@ -116,9 +116,9 @@ export function fromCountTokenResponse(
 
 export function toGenerateContentRequest(
   req: GenerateContentParameters,
+  userPromptId: string,
   project?: string,
   sessionId?: string,
-  userPromptId?: string,
 ): CAGenerateContentRequest {
   return {
     model: req.model,
