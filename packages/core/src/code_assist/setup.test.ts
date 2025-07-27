@@ -52,7 +52,7 @@ describe('setupUser', () => {
       {},
       'test-project',
       {},
-      "",
+      '',
       undefined,
     );
   });
@@ -68,7 +68,7 @@ describe('setupUser', () => {
       {},
       undefined,
       {},
-      "",
+      '',
       undefined,
     );
     expect(projectId).toEqual({
