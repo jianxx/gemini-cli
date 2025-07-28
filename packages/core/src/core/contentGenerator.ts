@@ -59,8 +59,20 @@ export enum AuthType {
   CLOUD_SHELL = 'cloud-shell',
 }
 
+export enum Provider {
+  GEMINI = 'gemini',
+  OPENAI = 'openai',
+  CLAUDE = 'claude',
+  GROK = 'grok',
+  DOUBAO = 'doubao',
+  QWEN = 'qwen',
+  KIMI = 'kimi',
+  DEEPSEEK = 'deepseek',
+}
+
 export type ContentGeneratorConfig = {
   model: string;
+  provider?: Provider;
   apiKey?: string;
   vertexai?: boolean;
   authType?: AuthType | undefined;
@@ -171,54 +183,39 @@ export async function createContentGenerator(
       'User-Agent': `GeminiCLI/${version} (${process.platform}; ${process.arch})`,
     },
   };
-  if (
-    config.authType === AuthType.LOGIN_WITH_GOOGLE ||
-    config.authType === AuthType.CLOUD_SHELL
-  ) {
-    return createCodeAssistContentGenerator(
-      httpOptions,
-      config.authType,
-      gcConfig,
-      sessionId,
-    );
-  }
+  const provider = config.provider ?? Provider.GEMINI;
 
-  if (
-    config.authType === AuthType.USE_GEMINI ||
-    config.authType === AuthType.USE_VERTEX_AI
-  ) {
-    return createGoogleGenaiProvider(config, gcConfig, sessionId);
+  switch (provider) {
+    case Provider.GEMINI:
+      if (
+        config.authType === AuthType.LOGIN_WITH_GOOGLE ||
+        config.authType === AuthType.CLOUD_SHELL
+      ) {
+        return createCodeAssistContentGenerator(
+          httpOptions,
+          config.authType,
+          gcConfig,
+          sessionId,
+        );
+      }
+      return createGoogleGenaiProvider(config, gcConfig, sessionId);
+    case Provider.OPENAI:
+      return createOpenaiProvider(config, gcConfig, sessionId);
+    case Provider.CLAUDE:
+      return createClaudeProvider(config, gcConfig, sessionId);
+    case Provider.GROK:
+      return createGrokProvider(config, gcConfig, sessionId);
+    case Provider.DOUBAO:
+      return createDoubaoProvider(config, gcConfig, sessionId);
+    case Provider.QWEN:
+      return createQwenProvider(config, gcConfig, sessionId);
+    case Provider.KIMI:
+      return createKimiProvider(config, gcConfig, sessionId);
+    case Provider.DEEPSEEK:
+      return createDeepseekProvider(config, gcConfig, sessionId);
+    default:
+      throw new Error(
+        `Error creating contentGenerator: Unsupported provider: ${provider}`,
+      );
   }
-
-  if (config.authType === AuthType.USE_OPENAI) {
-    return createOpenaiProvider(config, gcConfig, sessionId);
-  }
-
-  if (config.authType === AuthType.USE_CLAUDE) {
-    return createClaudeProvider(config, gcConfig, sessionId);
-  }
-
-  if (config.authType === AuthType.USE_GROK) {
-    return createGrokProvider(config, gcConfig, sessionId);
-  }
-
-  if (config.authType === AuthType.USE_DOUBAO) {
-    return createDoubaoProvider(config, gcConfig, sessionId);
-  }
-
-  if (config.authType === AuthType.USE_QWEN) {
-    return createQwenProvider(config, gcConfig, sessionId);
-  }
-
-  if (config.authType === AuthType.USE_KIMI) {
-    return createKimiProvider(config, gcConfig, sessionId);
-  }
-
-  if (config.authType === AuthType.USE_DEEPSEEK) {
-    return createDeepseekProvider(config, gcConfig, sessionId);
-  }
-
-  throw new Error(
-    `Error creating contentGenerator: Unsupported authType: ${config.authType}`,
-  );
 }

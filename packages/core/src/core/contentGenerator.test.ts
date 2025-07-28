@@ -8,6 +8,7 @@ import { describe, it, expect, vi, beforeEach, afterAll } from 'vitest';
 import {
   createContentGenerator,
   AuthType,
+  Provider,
   createContentGeneratorConfig,
 } from './contentGenerator.js';
 import { createCodeAssistContentGenerator } from '../code_assist/codeAssist.js';
@@ -29,6 +30,7 @@ describe('createContentGenerator', () => {
       {
         model: 'test-model',
         authType: AuthType.LOGIN_WITH_GOOGLE,
+        provider: Provider.GEMINI,
       },
       mockConfig,
     );
@@ -46,6 +48,7 @@ describe('createContentGenerator', () => {
         model: 'test-model',
         apiKey: 'test-api-key',
         authType: AuthType.USE_GEMINI,
+        provider: Provider.GEMINI,
       },
       mockConfig,
     );
