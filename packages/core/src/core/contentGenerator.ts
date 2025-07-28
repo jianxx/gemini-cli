@@ -11,9 +11,10 @@ import {
   CountTokensParameters,
   EmbedContentResponse,
   EmbedContentParameters,
-  GoogleGenAI,
 } from '@google/genai';
 import { createCodeAssistContentGenerator } from '../code_assist/codeAssist.js';
+import { createProvider as createGoogleGenaiProvider } from './googleGenaiProvider.js';
+import { createProvider as createOpenaiProvider } from './openaiProvider.js';
 import { DEFAULT_GEMINI_MODEL } from '../config/models.js';
 import { Config } from '../config/config.js';
 import { getEffectiveModel } from './modelCheck.js';
@@ -42,6 +43,7 @@ export enum AuthType {
   LOGIN_WITH_GOOGLE = 'oauth-personal',
   USE_GEMINI = 'gemini-api-key',
   USE_VERTEX_AI = 'vertex-ai',
+  USE_OPENAI = 'openai',
   CLOUD_SHELL = 'cloud-shell',
 }
 
@@ -61,6 +63,7 @@ export function createContentGeneratorConfig(
   const googleApiKey = process.env.GOOGLE_API_KEY || undefined;
   const googleCloudProject = process.env.GOOGLE_CLOUD_PROJECT || undefined;
   const googleCloudLocation = process.env.GOOGLE_CLOUD_LOCATION || undefined;
+  const openaiApiKey = process.env.OPENAI_API_KEY || undefined;
 
   // Use runtime model from config if available; otherwise, fall back to parameter or default
   const effectiveModel = config.getModel() || DEFAULT_GEMINI_MODEL;
@@ -88,6 +91,11 @@ export function createContentGeneratorConfig(
       contentGeneratorConfig.proxy,
     );
 
+    return contentGeneratorConfig;
+  }
+
+  if (authType === AuthType.USE_OPENAI && openaiApiKey) {
+    contentGeneratorConfig.apiKey = openaiApiKey;
     return contentGeneratorConfig;
   }
 
@@ -131,13 +139,11 @@ export async function createContentGenerator(
     config.authType === AuthType.USE_GEMINI ||
     config.authType === AuthType.USE_VERTEX_AI
   ) {
-    const googleGenAI = new GoogleGenAI({
-      apiKey: config.apiKey === '' ? undefined : config.apiKey,
-      vertexai: config.vertexai,
-      httpOptions,
-    });
+    return createGoogleGenaiProvider(config, gcConfig, sessionId);
+  }
 
-    return googleGenAI.models;
+  if (config.authType === AuthType.USE_OPENAI) {
+    return createOpenaiProvider(config, gcConfig, sessionId);
   }
 
   throw new Error(
