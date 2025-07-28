@@ -18,6 +18,14 @@ export * from './core/turn.js';
 export * from './core/geminiRequest.js';
 export * from './core/coreToolScheduler.js';
 export * from './core/nonInteractiveToolExecutor.js';
+export { createProvider as createGoogleGenaiProvider } from './core/googleGenaiProvider.js';
+export { createProvider as createOpenaiProvider } from './core/openaiProvider.js';
+export { createProvider as createClaudeProvider } from './core/claudeProvider.js';
+export { createProvider as createGrokProvider } from './core/grokProvider.js';
+export { createProvider as createDoubaoProvider } from './core/doubaoProvider.js';
+export { createProvider as createQwenProvider } from './core/qwenProvider.js';
+export { createProvider as createKimiProvider } from './core/kimiProvider.js';
+export { createProvider as createDeepseekProvider } from './core/deepseekProvider.js';
 
 export * from './code_assist/codeAssist.js';
 export * from './code_assist/oauth2.js';
