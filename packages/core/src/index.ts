@@ -18,8 +18,8 @@ export * from './core/turn.js';
 export * from './core/geminiRequest.js';
 export * from './core/coreToolScheduler.js';
 export * from './core/nonInteractiveToolExecutor.js';
-export * from './core/googleGenaiProvider.js';
-export * from './core/openaiProvider.js';
+export { createProvider as createGoogleGenaiProvider } from './core/googleGenaiProvider.js';
+export { createProvider as createOpenaiProvider } from './core/openaiProvider.js';
 
 export * from './code_assist/codeAssist.js';
 export * from './code_assist/oauth2.js';

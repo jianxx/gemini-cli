@@ -5,6 +5,7 @@
  */
 
 import OpenAI from 'openai';
+import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
 import type {
   ContentGenerator,
   ContentGeneratorConfig,
@@ -18,13 +19,32 @@ import type {
   EmbedContentParameters,
   EmbedContentResponse,
   Content,
+  ContentListUnion,
 } from '@google/genai';
 
-function toOpenAIMessages(contents: Content[]) {
-  return contents.map((c) => ({
-    role: c.role,
-    content: c.parts?.map((p: { text?: string }) => p.text || '').join('') ?? '',
-  }));
+function toOpenAIMessages(
+  contents: ContentListUnion | undefined,
+): ChatCompletionMessageParam[] {
+  if (!contents) return [];
+  if (typeof contents === 'string') {
+    return [{ role: 'user', content: contents } as ChatCompletionMessageParam];
+  }
+  const list = Array.isArray(contents) ? contents : [contents];
+  return list.map((item) => {
+    if (typeof item === 'string' || !('role' in item)) {
+      return {
+        role: 'user',
+        content: String(item),
+      } as ChatCompletionMessageParam;
+    }
+    const parts = (item.parts ?? [])
+      .map((p: any) => (typeof p === 'string' ? p : p.text || ''))
+      .join('');
+    return {
+      role: item.role as ChatCompletionMessageParam['role'],
+      content: parts,
+    } as ChatCompletionMessageParam;
+  });
 }
 
 export async function createProvider(
@@ -55,7 +75,7 @@ export async function createProvider(
         usageMetadata: {
           totalTokens: completion.usage?.total_tokens,
         },
-      } as GenerateContentResponse;
+      } as unknown as GenerateContentResponse;
     },
 
     async generateContentStream(
@@ -76,7 +96,7 @@ export async function createProvider(
             candidates: [
               { content: { role: 'model', parts: [{ text }] } },
             ],
-          } as GenerateContentResponse;
+          } as unknown as GenerateContentResponse;
         }
       }
       return iterator();
@@ -97,7 +117,7 @@ export async function createProvider(
         embeddings: res.data.map((e: { embedding: number[] }) => ({
           values: e.embedding,
         })),
-      } as EmbedContentResponse;
+      } as unknown as EmbedContentResponse;
     },
   };
 
