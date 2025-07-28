@@ -5,7 +5,11 @@
  */
 
 import OpenAI from 'openai';
-import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
+// Minimal shape for messages expected by OpenAI SDK
+type ChatCompletionMessageParam = {
+  role: string;
+  content?: string;
+};
 import type {
   ContentGenerator,
   ContentGeneratorConfig,
@@ -18,7 +22,6 @@ import type {
   CountTokensResponse,
   EmbedContentParameters,
   EmbedContentResponse,
-  Content,
   ContentListUnion,
 } from '@google/genai';
 
@@ -38,7 +41,7 @@ function toOpenAIMessages(
       } as ChatCompletionMessageParam;
     }
     const parts = (item.parts ?? [])
-      .map((p: any) => (typeof p === 'string' ? p : p.text || ''))
+      .map((p: unknown) => (typeof p === 'string' ? p : (p as { text?: string }).text || ''))
       .join('');
     return {
       role: item.role as ChatCompletionMessageParam['role'],
@@ -63,7 +66,7 @@ export async function createProvider(
       const messages = toOpenAIMessages(request.contents || []);
       const completion = await client.chat.completions.create({
         model: request.model,
-        messages,
+        messages: messages as ChatCompletionMessageParam[],
         temperature: request.config?.temperature,
         top_p: request.config?.topP,
       });
@@ -84,7 +87,7 @@ export async function createProvider(
       const messages = toOpenAIMessages(request.contents || []);
       const stream = await client.chat.completions.create({
         model: request.model,
-        messages,
+        messages: messages as ChatCompletionMessageParam[],
         temperature: request.config?.temperature,
         top_p: request.config?.topP,
         stream: true,
